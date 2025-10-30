@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { Copy } from "lucide-react";
@@ -21,7 +21,24 @@ type TokenInfo = {
   expiresIn?: number;
 };
 
-export default function OAuthRedirectPage() {
+function RedirectFallback() {
+  return (
+    <main className="mx-auto flex min-h-screen max-w-2xl items-center justify-center px-4 py-12">
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Token OAuth</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            Carregando redirecionamento...
+          </p>
+        </CardContent>
+      </Card>
+    </main>
+  );
+}
+
+function OAuthRedirectContent() {
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
   const state = searchParams.get("state");
@@ -202,5 +219,13 @@ export default function OAuthRedirectPage() {
         </CardContent>
       </Card>
     </main>
+  );
+}
+
+export default function OAuthRedirectPage() {
+  return (
+    <Suspense fallback={<RedirectFallback />}>
+      <OAuthRedirectContent />
+    </Suspense>
   );
 }
