@@ -2,7 +2,7 @@ import { randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 const AUTHORIZE_URL = "https://bling.com.br/Api/v3/oauth/authorize";
-const DEFAULT_REDIRECT_URI = "http://localhost:3000/oauth/redirect";
+const DEFAULT_REDIRECT_URI = "http://oauth-bling-web.vercel.app/oauth/redirect";
 
 const cookieOptions = {
   httpOnly: true,
