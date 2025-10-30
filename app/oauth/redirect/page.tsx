@@ -19,6 +19,7 @@ type TokenResponse = Record<string, unknown>;
 type TokenInfo = {
   accessToken: string;
   expiresIn?: number;
+  refreshToken?: string;
 };
 
 function RedirectFallback() {
@@ -46,7 +47,7 @@ function OAuthRedirectContent() {
   const [status, setStatus] = useState<FetchStatus>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
-  const [copied, setCopied] = useState(false);
+  const [copiedLabel, setCopiedLabel] = useState<string | null>(null);
 
   useEffect(() => {
     if (!code || !state) {
@@ -90,13 +91,17 @@ function OAuthRedirectContent() {
         }
 
         setStatus("success");
-        const token = (payload as TokenResponse)?.access_token;
-        const expires = Number((payload as TokenResponse)?.expires_in);
+        const data = payload as TokenResponse;
+        const token = data?.access_token;
+        const refresh = data?.refresh_token;
+        const expires = Number(data?.expires_in);
 
         if (typeof token === "string" && token) {
           setTokenInfo({
             accessToken: token,
             expiresIn: Number.isFinite(expires) ? expires : undefined,
+            refreshToken:
+              typeof refresh === "string" && refresh ? refresh : undefined,
           });
         } else {
           setErrorMessage(
@@ -142,17 +147,13 @@ function OAuthRedirectContent() {
     return `Expira em ${formatted} (fuso horário local).`;
   }, [tokenInfo]);
 
-  const handleCopy = async () => {
-    if (!tokenInfo?.accessToken) {
-      return;
-    }
-
+  const handleCopy = async (value: string, label: string) => {
     try {
-      await navigator.clipboard.writeText(tokenInfo.accessToken);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(value);
+      setCopiedLabel(label);
+      setTimeout(() => setCopiedLabel(null), 2000);
     } catch (error) {
-      setCopied(false);
+      setCopiedLabel(null);
       setErrorMessage(
         error instanceof Error
           ? error.message
@@ -193,22 +194,49 @@ function OAuthRedirectContent() {
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  onClick={handleCopy}
+                  onClick={() =>
+                    handleCopy(tokenInfo.accessToken, "Access token copiado.")
+                  }
                   title="Copiar access_token"
                 >
                   <Copy className="size-4" />
                   <span className="sr-only">Copiar access_token</span>
                 </Button>
               </div>
+              {tokenInfo.refreshToken ? (
+                <div className="flex items-start justify-between gap-4 rounded-md border bg-muted/30 p-4">
+                  <div className="space-y-1">
+                    <p className="text-xs uppercase text-muted-foreground">
+                      Refresh token
+                    </p>
+                    <code className="break-all text-sm text-foreground">
+                      {tokenInfo.refreshToken}
+                    </code>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() =>
+                      handleCopy(
+                        tokenInfo.refreshToken as string,
+                        "Refresh token copiado."
+                      )
+                    }
+                    title="Copiar refresh_token"
+                  >
+                    <Copy className="size-4" />
+                    <span className="sr-only">Copiar refresh_token</span>
+                  </Button>
+                </div>
+              ) : null}
               {expiresLabel ? (
                 <span className="text-sm text-muted-foreground">
                   {expiresLabel}
                 </span>
               ) : null}
-              {copied ? (
-                <span className="text-sm text-emerald-600">
-                  Token copiado para a área de transferência.
-                </span>
+              {copiedLabel ? (
+                <span className="text-sm text-emerald-600">{copiedLabel}</span>
               ) : null}
             </div>
           ) : null}
