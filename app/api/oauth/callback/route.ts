@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const TOKEN_URL = "https://www.bling.com.br/Api/v3/oauth/token";
-const DEFAULT_REDIRECT_URI = "http://oauth-bling-web.vercel.app/oauth/redirect";
+const DEFAULT_REDIRECT_URI =
+  "https://oauth-bling-web.vercel.app/oauth/redirect";
 
 export async function POST(request: NextRequest) {
   try {
