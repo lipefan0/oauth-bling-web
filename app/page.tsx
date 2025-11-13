@@ -62,6 +62,12 @@ export default function Home() {
           <CardDescription>
             Informe as credenciais da sua aplicação para abrir a tela de
             autorização.
+            <span className="mt-2 block text-sm">
+              Utilize essa url para redirecionamento:
+              <code className="ml-1 font-mono">
+                https://oauth-bling-web.vercel.app/oauth/redirect
+              </code>
+            </span>
           </CardDescription>
         </CardHeader>
         <CardContent>
