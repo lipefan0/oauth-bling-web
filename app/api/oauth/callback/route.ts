@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     if (!code || !state) {
       return NextResponse.json(
         { error: "code e state são obrigatórios." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     if (!storedState || !storedCredentials) {
       return NextResponse.json(
         { error: "Sessão expirada. Inicie o fluxo novamente." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -33,24 +33,24 @@ export async function POST(request: NextRequest) {
 
     try {
       credentials = JSON.parse(
-        Buffer.from(storedCredentials, "base64").toString("utf8")
+        Buffer.from(storedCredentials, "base64").toString("utf8"),
       );
     } catch (error) {
       return NextResponse.json(
         { error: "Não foi possível recuperar as credenciais da sessão." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!credentials?.clientId || !credentials?.clientSecret) {
       return NextResponse.json(
         { error: "Credenciais incompletas. Reinicie o fluxo." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const authorizationHeader = `Basic ${Buffer.from(
-      `${credentials.clientId}:${credentials.clientSecret}`
+      `${credentials.clientId}:${credentials.clientSecret}`,
     ).toString("base64")}`;
 
     const redirectUri = process.env.BLING_REDIRECT_URI ?? DEFAULT_REDIRECT_URI;
@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
         Authorization: authorizationHeader,
         "Content-Type": "application/x-www-form-urlencoded",
         Accept: "application/json",
+        "enable-jwt": "1",
       },
       body: body.toString(),
     });
@@ -102,7 +103,7 @@ export async function POST(request: NextRequest) {
             ? error.message
             : "Erro inesperado ao trocar o código pelo token.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
