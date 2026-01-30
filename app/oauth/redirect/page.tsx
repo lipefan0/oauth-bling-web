@@ -7,6 +7,7 @@ import { Copy } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 
 type FetchStatus = "idle" | "loading" | "success" | "error";
 
@@ -44,15 +45,19 @@ function OAuthRedirectContent() {
   const code = searchParams.get("code");
   const state = searchParams.get("state");
 
-  const [status, setStatus] = useState<FetchStatus>("idle");
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const hasValidParams = code && state;
+
+  const [status, setStatus] = useState<FetchStatus>(
+    hasValidParams ? "idle" : "error",
+  );
+  const [errorMessage, setErrorMessage] = useState<string | null>(
+    hasValidParams ? null : "Parâmetros code e state não encontrados na URL.",
+  );
   const [tokenInfo, setTokenInfo] = useState<TokenInfo | null>(null);
   const [copiedLabel, setCopiedLabel] = useState<string | null>(null);
 
   useEffect(() => {
     if (!code || !state) {
-      setStatus("error");
-      setErrorMessage("Parâmetros code e state não encontrados na URL.");
       return;
     }
 
@@ -85,7 +90,7 @@ function OAuthRedirectContent() {
           setErrorMessage(
             typeof payload.error === "string"
               ? payload.error
-              : "Falha ao obter o token. Verifique as credenciais e tente novamente."
+              : "Falha ao obter o token. Verifique as credenciais e tente novamente.",
           );
           return;
         }
@@ -105,7 +110,7 @@ function OAuthRedirectContent() {
           });
         } else {
           setErrorMessage(
-            "Resposta sem access_token. Verifique as credenciais."
+            "Resposta sem access_token. Verifique as credenciais.",
           );
           setStatus("error");
         }
@@ -118,7 +123,7 @@ function OAuthRedirectContent() {
         setErrorMessage(
           error instanceof Error
             ? error.message
-            : "Erro inesperado ao buscar o token."
+            : "Erro inesperado ao buscar o token.",
         );
       }
     };
@@ -130,6 +135,8 @@ function OAuthRedirectContent() {
     };
   }, [code, state]);
 
+  const [currentTime] = useState(() => Date.now());
+
   const expiresLabel = useMemo(() => {
     const seconds = tokenInfo?.expiresIn;
 
@@ -137,7 +144,7 @@ function OAuthRedirectContent() {
       return null;
     }
 
-    const expiresAt = new Date(Date.now() + seconds * 1000);
+    const expiresAt = new Date(currentTime + seconds * 1000);
 
     const formatted = new Intl.DateTimeFormat("pt-BR", {
       dateStyle: "medium",
@@ -145,7 +152,7 @@ function OAuthRedirectContent() {
     }).format(expiresAt);
 
     return `Expira em ${formatted} (fuso horário local).`;
-  }, [tokenInfo]);
+  }, [tokenInfo, currentTime]);
 
   const handleCopy = async (value: string, label: string) => {
     try {
@@ -157,7 +164,7 @@ function OAuthRedirectContent() {
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Não foi possível copiar o token."
+          : "Não foi possível copiar o token.",
       );
     }
   };
@@ -220,7 +227,7 @@ function OAuthRedirectContent() {
                     onClick={() =>
                       handleCopy(
                         tokenInfo.refreshToken as string,
-                        "Refresh token copiado."
+                        "Refresh token copiado.",
                       )
                     }
                     title="Copiar refresh_token"
@@ -242,7 +249,7 @@ function OAuthRedirectContent() {
           ) : null}
 
           <Button asChild variant="secondary" className="w-full">
-            <a href="/">Voltar para o início</a>
+            <Link href="/">Voltar para o início</Link>
           </Button>
         </CardContent>
       </Card>
